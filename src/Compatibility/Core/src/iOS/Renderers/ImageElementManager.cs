@@ -4,8 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
 using CoreAnimation;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Extensions.Logging;
 
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using NativeImage = UIKit.UIImage;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -281,11 +284,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 			catch (OperationCanceledException)
 			{
-				Controls.Internals.Log.Warning("Image loading", "Image load cancelled");
+				Forms.MauiContext?.CreateLogger<ImageRenderer>()?.LogWarning("Image load cancelled");
 			}
 			catch (Exception ex)
 			{
-				Controls.Internals.Log.Warning("Image loading", $"Image load failed: {ex}");
+				Forms.MauiContext?.CreateLogger<ImageRenderer>()?.LogWarning(ex, "Image load failed");
 			}
 
 			return null;

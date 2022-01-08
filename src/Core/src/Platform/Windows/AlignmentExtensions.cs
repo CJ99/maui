@@ -1,6 +1,6 @@
 using Microsoft.UI.Xaml;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class AlignmentExtensions
 	{
@@ -14,6 +14,19 @@ namespace Microsoft.Maui
 					return HorizontalAlignment.Right;
 				default:
 					return HorizontalAlignment.Left;
+			}
+		}
+
+		public static VerticalAlignment ToNativeVerticalAlignment(this TextAlignment alignment)
+		{
+			switch (alignment)
+			{
+				case TextAlignment.Center:
+					return VerticalAlignment.Center;
+				case TextAlignment.End:
+					return VerticalAlignment.Bottom;
+				default:
+					return VerticalAlignment.Top;
 			}
 		}
 

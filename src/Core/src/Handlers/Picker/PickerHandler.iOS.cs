@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using Microsoft.Extensions.DependencyInjection;
+using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -61,8 +62,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.EditingDidEnd += OnEnded;
 			nativeView.EditingChanged += OnEditing;
-
-
 			base.ConnectHandler(nativeView);
 		}
 
@@ -94,11 +93,16 @@ namespace Microsoft.Maui.Handlers
 			NativeView.UpdatePicker(VirtualView);
 		}
 
-		public static void MapReload(PickerHandler handler, IPicker picker) => handler.Reload();
+		public static void MapReload(PickerHandler handler, IPicker picker, object? args) => handler.Reload();
 
 		public static void MapTitle(PickerHandler handler, IPicker picker)
 		{
 			handler.NativeView?.UpdateTitle(picker);
+		}
+
+		public static void MapTitleColor(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateTitleColor(picker);
 		}
 
 		public static void MapSelectedIndex(PickerHandler handler, IPicker picker)
@@ -123,8 +127,15 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateHorizontalTextAlignment(picker);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(PickerHandler handler, IPicker view) { }
+		public static void MapTextColor(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateTextColor(picker);
+		}
+
+		public static void MapVerticalTextAlignment(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(picker);
+		}
 
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{

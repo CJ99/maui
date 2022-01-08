@@ -12,8 +12,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public ShellFooterView(Shell element)
 		{
-			Shell.VerifyShellUWPFlagEnabled(nameof(ShellFooterView));
-
 			SetElement(element);
 			SizeChanged += OnShellFooterViewSizeChanged;
 			HorizontalContentAlignment = HorizontalAlignment.Stretch;
@@ -22,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnShellFooterViewSizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			if (Element is Layout layout)
+			if (Element is Compatibility.Layout layout)
 				layout.ForceLayout();
 		}
 

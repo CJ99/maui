@@ -27,6 +27,8 @@ namespace Microsoft.Maui.Essentials
 
 		public static event EventHandler<ActivityStateChangedEventArgs> ActivityStateChanged;
 
+		internal const string EssentialsConnectivityChanged = "com.maui.essentials.ESSENTIALS_CONNECTIVITY_CHANGED";
+
 		internal const int requestCodeFilePicker = 11001;
 		internal const int requestCodeMediaPicker = 11002;
 		internal const int requestCodeMediaCapture = 11003;
@@ -163,26 +165,17 @@ namespace Microsoft.Maui.Essentials
 			return AndroidUri.FromFile(sharedFile);
 		}
 
-		internal static bool HasApiLevelKitKat => HasApiLevel(BuildVersionCodes.Kitkat);
+		internal static readonly bool HasApiLevelKitKat = OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.Kitkat);
 
-		internal static bool HasApiLevelN => HasApiLevel(24);
+		internal static readonly bool HasApiLevelN = OperatingSystem.IsAndroidVersionAtLeast(24);
 
-		internal static bool HasApiLevelNMr1 => HasApiLevel(25);
+		internal static readonly bool HasApiLevelS = OperatingSystem.IsAndroidVersionAtLeast(31);
 
-		internal static bool HasApiLevelO => HasApiLevel(26);
+		internal static readonly bool HasApiLevelNMr1 = OperatingSystem.IsAndroidVersionAtLeast(25);
 
-		internal static bool HasApiLevelQ => HasApiLevel(29);
+		internal static readonly bool HasApiLevelO = OperatingSystem.IsAndroidVersionAtLeast(26);
 
-		static int? sdkInt;
-
-		internal static int SdkInt
-			=> sdkInt ??= (int)Build.VERSION.SdkInt;
-
-		internal static bool HasApiLevel(BuildVersionCodes versionCode) =>
-			SdkInt >= (int)versionCode;
-
-		internal static bool HasApiLevel(int apiLevel) =>
-			SdkInt >= apiLevel;
+		internal static readonly bool HasApiLevelQ = OperatingSystem.IsAndroidVersionAtLeast(29);
 
 		internal static CameraManager CameraManager =>
 			AppContext.GetSystemService(Context.CameraService) as CameraManager;
@@ -190,8 +183,21 @@ namespace Microsoft.Maui.Essentials
 		internal static ConnectivityManager ConnectivityManager =>
 			AppContext.GetSystemService(Context.ConnectivityService) as ConnectivityManager;
 
+#if __ANDROID_31__
+		internal static VibratorManager VibratorManager =>
+			HasApiLevelS
+				? AppContext.GetSystemService(Context.VibratorManagerService) as VibratorManager
+				: null;
+#endif
+
 		internal static Vibrator Vibrator =>
-			AppContext.GetSystemService(Context.VibratorService) as Vibrator;
+#if __ANDROID_31__
+			HasApiLevelS
+				? VibratorManager.DefaultVibrator :
+#endif
+#pragma warning disable CS0618 // Type or member is obsolete
+				AppContext.GetSystemService(Context.VibratorService) as Vibrator;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		internal static WifiManager WifiManager =>
 			AppContext.GetSystemService(Context.WifiService) as WifiManager;

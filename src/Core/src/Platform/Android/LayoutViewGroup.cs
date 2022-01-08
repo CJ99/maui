@@ -6,12 +6,14 @@ using Android.Views;
 using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 using Size = Microsoft.Maui.Graphics.Size;
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui.Platform
 {
 	public class LayoutViewGroup : ViewGroup
 	{
 		public LayoutViewGroup(Context context) : base(context)
 		{
+			//Maui layouts should not impose clipping on their children
+			SetClipChildren(false);
 		}
 
 		public LayoutViewGroup(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -66,8 +68,8 @@ namespace Microsoft.Maui.Handlers
 			var deviceIndependentRight = Context.FromPixels(r);
 			var deviceIndependentBottom = Context.FromPixels(b);
 
-			var destination = Rectangle.FromLTRB(deviceIndependentLeft, deviceIndependentTop,
-				deviceIndependentRight, deviceIndependentBottom);
+			var destination = Rectangle.FromLTRB(0, 0,
+				deviceIndependentRight - deviceIndependentLeft, deviceIndependentBottom - deviceIndependentTop);
 
 			CrossPlatformArrange(destination);
 		}

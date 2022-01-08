@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel;
 using System.Drawing;
 using CoreGraphics;
+using Microsoft.Maui.Controls.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS

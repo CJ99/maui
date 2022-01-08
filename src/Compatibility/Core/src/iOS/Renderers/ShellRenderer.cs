@@ -1,7 +1,10 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -204,7 +207,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			catch (Exception exc)
 			{
-				Controls.Internals.Log.Warning(nameof(Shell), $"Failed on changing current item: {exc}");
+				Forms.MauiContext?.CreateLogger<ShellRenderer>()?.LogWarning(exc, "Failed on changing current item");
 			}
 		}
 
@@ -272,7 +275,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			catch (Exception exc)
 			{
-				Controls.Internals.Log.Warning(nameof(Shell), $"Failed to SetCurrentShellItemController: {exc}");
+				Forms.MauiContext?.CreateLogger<ShellRenderer>()?.LogWarning(exc, "Failed to SetCurrentShellItemController");
 			}
 		}
 

@@ -1,49 +1,45 @@
-﻿using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Hosting;
+﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class ContentPage : IPage, HotReload.IHotReloadableView
+	public partial class ContentPage : IContentView, HotReload.IHotReloadableView
 	{
-		// TODO ezhart That there's a layout alignment here tells us this hierarchy needs work :) 
-		public Primitives.LayoutAlignment HorizontalLayoutAlignment => Primitives.LayoutAlignment.Fill;
-
-		IView IPage.Content => Content;
-
-
+		object IContentView.Content => Content;
+		IView IContentView.PresentedContent => Content;
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (Content is IFrameworkElement frameworkElement)
-			{
-				frameworkElement.Measure(widthConstraint, heightConstraint);
-			}
-
-			return new Size(widthConstraint, heightConstraint);
+			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
+			return DesiredSize;
 		}
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			// Update the Bounds (Frame) for this page
-			Layout(bounds);
-
-			if (Content is IFrameworkElement element)
-			{
-				element.Arrange(bounds);
-				element.Handler?.NativeArrange(element.Frame);
-			}
-
+			Frame = this.ComputeFrame(bounds);
+			Handler?.NativeArrange(Frame);
 			return Frame.Size;
+		}
+
+		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		{
+			_ = this.MeasureContent(widthConstraint, heightConstraint);
+			return new Size(widthConstraint, heightConstraint);
+		}
+
+		Size IContentView.CrossPlatformArrange(Rectangle bounds)
+		{
+			this.ArrangeContent(bounds);
+			return bounds.Size;
 		}
 
 		protected override void InvalidateMeasureOverride()
 		{
 			base.InvalidateMeasureOverride();
-			if (Content is IFrameworkElement frameworkElement)
+			if (Content is IView view)
 			{
-				frameworkElement.InvalidateMeasure();
+				view.InvalidateMeasure();
 			}
 		}
 

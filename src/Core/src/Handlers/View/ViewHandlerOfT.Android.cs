@@ -3,15 +3,14 @@ using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Graphics;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
-		View? INativeViewHandler.NativeView => WrappedNativeView;
+		View? INativeViewHandler.NativeView => this.GetWrappedNativeView();
 		View? INativeViewHandler.ContainerView => ContainerView;
-
-		protected View? WrappedNativeView => ContainerView ?? (View?)NativeView;
 
 		public new WrapperView? ContainerView
 		{
@@ -19,20 +18,16 @@ namespace Microsoft.Maui.Handlers
 			protected set => base.ContainerView = value;
 		}
 
-		public Context? Context => MauiContext?.Context;
-
-		protected Context ContextWithValidation([CallerMemberName] string callerName = "")
-		{
-			_ = Context ?? throw new InvalidOperationException($"Context cannot be null here: {callerName}");
-			return Context;
-		}
+		public Context Context => MauiContext?.Context ?? throw new InvalidOperationException($"Context cannot be null here");
 
 		public override void NativeArrange(Rectangle frame)
 		{
-			var nativeView = WrappedNativeView;
+			var nativeView = this.GetWrappedNativeView();
 
-			if (nativeView == null)
+			if (nativeView == null || MauiContext == null || Context == null)
+			{
 				return;
+			}
 
 			if (frame.Width < 0 || frame.Height < 0)
 			{
@@ -40,20 +35,19 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			if (Context == null)
-				return;
-
 			var left = Context.ToPixels(frame.Left);
 			var top = Context.ToPixels(frame.Top);
 			var bottom = Context.ToPixels(frame.Bottom);
 			var right = Context.ToPixels(frame.Right);
 
 			nativeView.Layout((int)left, (int)top, (int)right, (int)bottom);
+
+			Invoke(nameof(IView.Frame), frame);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var nativeView = WrappedNativeView;
+			var nativeView = this.GetWrappedNativeView();
 
 			if (nativeView == null || VirtualView == null || Context == null)
 			{
@@ -61,8 +55,8 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			// Create a spec to handle the native measure
-			var widthSpec = CreateMeasureSpec(widthConstraint, VirtualView.Width);
-			var heightSpec = CreateMeasureSpec(heightConstraint, VirtualView.Height);
+			var widthSpec = CreateMeasureSpec(widthConstraint, VirtualView.Width, VirtualView.MaximumWidth);
+			var heightSpec = CreateMeasureSpec(heightConstraint, VirtualView.Height, VirtualView.MaximumHeight);
 
 			nativeView.Measure(widthSpec, heightSpec);
 
@@ -70,15 +64,20 @@ namespace Microsoft.Maui.Handlers
 			return Context.FromPixels(nativeView.MeasuredWidth, nativeView.MeasuredHeight);
 		}
 
-		int CreateMeasureSpec(double constraint, double explicitSize)
+		int CreateMeasureSpec(double constraint, double explicitSize, double maximumSize)
 		{
 			var mode = MeasureSpecMode.AtMost;
 
-			if (explicitSize >= 0)
+			if (IsExplicitSet(explicitSize))
 			{
 				// We have a set value (i.e., a Width or Height)
 				mode = MeasureSpecMode.Exactly;
 				constraint = explicitSize;
+			}
+			else if (IsMaximumSet(maximumSize))
+			{
+				mode = MeasureSpecMode.AtMost;
+				constraint = maximumSize;
 			}
 			else if (double.IsInfinity(constraint))
 			{

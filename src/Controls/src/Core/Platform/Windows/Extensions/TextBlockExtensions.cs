@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -46,5 +47,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static void DetermineTruncatedTextWrapping(TextBlock textBlock) =>
 			textBlock.TextWrapping = textBlock.MaxLines > 1 ? TextWrapping.Wrap : TextWrapping.NoWrap;
+
+		public static void UpdateText(this TextBlock nativeControl, Label label)
+		{
+			switch (label.TextType)
+			{
+				case TextType.Html:
+					nativeControl.UpdateTextHtml(label);
+					break;
+
+				default:
+					nativeControl.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+					break;
+			}
+		}
 	}
 }

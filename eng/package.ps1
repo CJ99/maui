@@ -1,18 +1,20 @@
 param(
   [string] $configuration = 'Debug',
-  [string] $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\MSBuild.exe"
+  [string] $msbuild
 )
 
 $ErrorActionPreference = "Stop"
-Write-Host $msbuild
+Write-Host "-msbuild: $msbuild"
+Write-Host "MSBUILD_EXE: $env:MSBUILD_EXE"
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
-$sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
-$slnTasks = Join-Path $PSScriptRoot ../Microsoft.Maui.BuildTasks-net6.sln
+$logsDirectory = Join-Path $artifacts logs
+$sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-net6.slnf
+$slnMac = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-mac.slnf
 
 # Bootstrap ./bin/dotnet/
 $csproj = Join-Path $PSScriptRoot ../src/DotNet/DotNet.csproj
-& dotnet build $csproj -bl:$artifacts/dotnet-$configuration.binlog
+& dotnet build $csproj -bl:$logsDirectory/dotnet-$configuration.binlog
 
 # Full path to dotnet folder
 $dotnet = Join-Path $PSScriptRoot ../bin/dotnet/
@@ -20,6 +22,24 @@ $dotnet = (Get-Item $dotnet).FullName
 
 if ($IsWindows)
 {
+    if (-not $msbuild)
+    {
+        $msbuild = $env:MSBUILD_EXE
+    }
+
+    if (-not $msbuild)
+    {
+        # If MSBuild path isn't specified, use the standard location of 'vswhere' to determine an appropriate MSBuild to use.
+        # Learn more about VSWhere here: https://github.com/microsoft/vswhere/wiki/Find-MSBuild
+        $msbuild = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -prerelease -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+
+        if (-not $msbuild)
+        {
+            throw 'Could not locate MSBuild automatically. Set the $msbuild parameter of this script to provide a location.'
+        }
+        Write-Host "Found MSBuild at ${msbuild}"
+    }
+
     # Modify global.json, so the IDE can load
     $globaljson = Join-Path $PSScriptRoot ../global.json
     [xml] $xml = Get-Content (Join-Path $PSScriptRoot Versions.props)
@@ -55,31 +75,23 @@ if ($IsWindows)
         # Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
         $env:PATH=($dotnet + [IO.Path]::PathSeparator + $env:PATH)
 
-        # Have to build the solution tasks
-        & $msbuild $slnTasks `
-            /p:configuration=$configuration `
-            /p:SymbolPackageFormat=snupkg `
-            /restore `
-            /t:build `
-            /bl:"$artifacts/maui-build-tasks-$configuration.binlog"
-
         # Have to build the solution first so the xbf files are there for pack
         & $msbuild $sln `
             /p:configuration=$configuration `
             /p:SymbolPackageFormat=snupkg `
             /restore `
-            /t:build `
+            /t:Build `
             /p:Packing=true `
-            /bl:"$artifacts/maui-build-$configuration.binlog"
-        if (!$?) { throw "Build failed." }
+            /bl:"$logsDirectory/maui-build-$configuration.binlog"
+        if (!$?) { throw "Build .NET MAUI failed." }
 
         & $msbuild $sln `
             /p:configuration=$configuration `
             /p:SymbolPackageFormat=snupkg `
-            /t:pack `
+            /t:Pack `
             /p:Packing=true `
-            /bl:"$artifacts/maui-pack-$configuration.binlog"
-        if (!$?) { throw "Pack failed." }
+            /bl:"$logsDirectory/maui-pack-$configuration.binlog"
+        if (!$?) { throw "Pack .NET MAUI failed." }
     }
     finally
     {
@@ -101,10 +113,10 @@ else
         $dotnet_tool = Join-Path $dotnet dotnet
 
         # Build with ./bin/dotnet/dotnet
-        & $dotnet_tool pack $sln `
+        & $dotnet_tool pack $slnMac `
             -c:$configuration `
             -p:SymbolPackageFormat=snupkg `
-            -bl:$artifacts/maui-pack-$configuration.binlog
+            -bl:$logsDirectory/maui-pack-$configuration.binlog
         if (!$?) { throw "Pack failed." }
     }
     finally

@@ -12,11 +12,11 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using ARect = Android.Graphics.Rect;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using Paint = Android.Graphics.Paint;
-using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -41,10 +41,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		VisualElementTracker IVisualElementRenderer.Tracker => null;
 
 		AView IVisualElementRenderer.View => _flyoutRenderer.AndroidView;
-
-		// Used by Previewer
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public ViewGroup ViewGroup => _flyoutRenderer.AndroidView as ViewGroup;
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
@@ -80,16 +76,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		#region IShellContext
 
-		Context IShellContext.AndroidContext => AndroidContext;
+		Context Microsoft.Maui.Controls.Platform.IShellContext.AndroidContext => AndroidContext;
 
 		// This is very bad, FIXME.
 		// This assumes all flyouts will implement via DrawerLayout which is PROBABLY true but
 		// I dont want to back us into a corner this time.
-		DrawerLayout IShellContext.CurrentDrawerLayout => (DrawerLayout)_flyoutRenderer.AndroidView;
+		DrawerLayout Microsoft.Maui.Controls.Platform.IShellContext.CurrentDrawerLayout => (DrawerLayout)_flyoutRenderer.AndroidView;
 
-		Shell IShellContext.Shell => Element;
+		Shell Microsoft.Maui.Controls.Platform.IShellContext.Shell => Element;
 
-		IShellObservableFragment IShellContext.CreateFragmentForPage(Page page)
+		IShellObservableFragment Microsoft.Maui.Controls.Platform.IShellContext.CreateFragmentForPage(Page page)
 		{
 			return CreateFragmentForPage(page);
 		}
@@ -109,22 +105,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return CreateShellSectionRenderer(shellSection);
 		}
 
-		IShellToolbarTracker IShellContext.CreateTrackerForToolbar(Toolbar toolbar)
+		IShellToolbarTracker Microsoft.Maui.Controls.Platform.IShellContext.CreateTrackerForToolbar(AToolbar toolbar)
 		{
 			return CreateTrackerForToolbar(toolbar);
 		}
 
-		IShellToolbarAppearanceTracker IShellContext.CreateToolbarAppearanceTracker()
+		IShellToolbarAppearanceTracker Microsoft.Maui.Controls.Platform.IShellContext.CreateToolbarAppearanceTracker()
 		{
 			return CreateToolbarAppearanceTracker();
 		}
 
-		IShellTabLayoutAppearanceTracker IShellContext.CreateTabLayoutAppearanceTracker(ShellSection shellSection)
+		IShellTabLayoutAppearanceTracker Microsoft.Maui.Controls.Platform.IShellContext.CreateTabLayoutAppearanceTracker(ShellSection shellSection)
 		{
 			return CreateTabLayoutAppearanceTracker(shellSection);
 		}
 
-		IShellBottomNavViewAppearanceTracker IShellContext.CreateBottomNavViewAppearanceTracker(ShellItem shellItem)
+		IShellBottomNavViewAppearanceTracker Microsoft.Maui.Controls.Platform.IShellContext.CreateBottomNavViewAppearanceTracker(ShellItem shellItem)
 		{
 			return CreateBottomNavViewAppearanceTracker(shellItem);
 		}
@@ -189,7 +185,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return new ShellSectionRenderer(this);
 		}
 
-		protected virtual IShellToolbarTracker CreateTrackerForToolbar(Toolbar toolbar)
+		protected virtual IShellToolbarTracker CreateTrackerForToolbar(AToolbar toolbar)
 		{
 			return new ShellToolbarTracker(this, toolbar, ((IShellContext)this).CurrentDrawerLayout);
 		}
@@ -232,7 +228,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_frameLayout = new CustomFrameLayout(AndroidContext)
 			{
 				LayoutParameters = new LP(LP.MatchParent, LP.MatchParent),
-				Id = AppCompat.Platform.GenerateViewId(),
+				Id = Platform.GenerateViewId(),
 			};
 
 			Profile.FramePartition("SetFitsSystemWindows");
@@ -267,7 +263,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			FragmentTransaction transaction = manager.BeginTransactionEx();
 
 			if (animate)
-				transaction.SetTransitionEx((int)global::Android.App.FragmentTransit.EnterMask);
+				transaction.SetTransitionEx((int)global::Android.App.FragmentTransit.FragmentOpen);
 
 			transaction.ReplaceEx(_frameLayout.Id, fragment);
 			transaction.CommitAllowingStateLossEx();
@@ -439,6 +435,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			// TODO: set large fields to null.
 
 			_disposed = true;
+		}
+
+		IShellFlyoutContentView Controls.Platform.IShellContext.CreateShellFlyoutContentView()
+		{
+			return (this as IShellContext).CreateShellFlyoutContentRenderer();
+		}
+
+		IShellItemView Controls.Platform.IShellContext.CreateShellItemView(ShellItem shellItem)
+		{
+			return (this as IShellContext).CreateShellItemRenderer(shellItem);
+		}
+
+		IShellSectionView Controls.Platform.IShellContext.CreateShellSectionView(ShellSection shellSection)
+		{
+			return (this as IShellContext).CreateShellSectionRenderer(shellSection);
 		}
 
 		#endregion IDisposable

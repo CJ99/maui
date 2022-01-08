@@ -2,12 +2,12 @@
 using Windows.UI.Text;
 using FontWeights = Microsoft.UI.Text.FontWeights;
 using FWeight = Windows.UI.Text.FontWeight;
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class FontExtensions
 	{
 		public static FontStyle ToFontStyle(this Font fontAttributes) =>
-				fontAttributes.FontSlant switch
+				fontAttributes.Slant switch
 				{
 					FontSlant.Italic => FontStyle.Italic,
 					FontSlant.Oblique => FontStyle.Oblique,

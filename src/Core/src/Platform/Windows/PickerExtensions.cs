@@ -2,7 +2,7 @@
 using Microsoft.Maui.Graphics;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class PickerExtensions
 	{
@@ -45,6 +45,11 @@ namespace Microsoft.Maui
 		public static void UpdateHorizontalTextAlignment(this MauiComboBox nativeComboBox, IPicker picker)
 		{
 			nativeComboBox.HorizontalContentAlignment = picker.HorizontalTextAlignment.ToNativeHorizontalAlignment();
+		}
+
+		public static void UpdateVerticalTextAlignment(this MauiComboBox nativeComboBox, IPicker picker)
+		{
+			nativeComboBox.VerticalContentAlignment = picker.VerticalTextAlignment.ToNativeVerticalAlignment();
 		}
 	}
 }

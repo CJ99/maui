@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -27,16 +26,6 @@ namespace Microsoft.Maui.Controls
 
 		public bool SeparateFlyoutPage { get; set; }
 
-
-		[Obsolete("MASTERDETAILPAGE")]
-		public bool HaveMasterDetail => SeparateFlyoutPage;
-
-		[Obsolete("MASTERDETAILPAGE")]
-		public bool SeparateMasterDetail
-		{
-			get => SeparateFlyoutPage;
-			set => SeparateFlyoutPage = value;
-		}
 
 		public Page Target
 		{

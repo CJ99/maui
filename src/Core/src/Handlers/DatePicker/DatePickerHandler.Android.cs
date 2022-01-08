@@ -1,13 +1,13 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
-		static Drawable? DefaultBackground;
+		Drawable? _defaultBackground;
+		ColorStateList? _defaultTextColors;
 
 		DatePickerDialog? _dialog;
 
@@ -27,14 +27,20 @@ namespace Microsoft.Maui.Handlers
 			return mauiDatePicker;
 		}
 
-		protected override void SetupDefaults(MauiDatePicker nativeView)
-		{
-			DefaultBackground = nativeView.Background;
+		internal DatePickerDialog? DatePickerDialog { get { return _dialog; } }
 
-			base.SetupDefaults(nativeView);
+		protected override void ConnectHandler(MauiDatePicker nativeView)
+		{
+			base.ConnectHandler(nativeView);
+
+			SetupDefaults(nativeView);
 		}
 
-		internal DatePickerDialog? DatePickerDialog { get { return _dialog; } }
+		void SetupDefaults(MauiDatePicker nativeView)
+		{
+			_defaultBackground = nativeView.Background;
+			_defaultTextColors = nativeView.TextColors;
+		}
 
 		protected override void DisconnectHandler(MauiDatePicker nativeView)
 		{
@@ -54,6 +60,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (VirtualView != null)
 					VirtualView.Date = e.Date;
+
+				// TODO: Update IsFocused Property
+
 			}, year, month, day);
 
 			return dialog;
@@ -62,7 +71,7 @@ namespace Microsoft.Maui.Handlers
 		// This is a Android-specific mapping
 		public static void MapBackground(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateBackground(datePicker, DefaultBackground);
+			handler.NativeView?.UpdateBackground(datePicker, handler._defaultBackground);
 		}
 
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
@@ -97,16 +106,21 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(datePicker, fontManager);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.NativeView?.UpdateTextColor(datePicker, handler._defaultTextColors);
+		}
 
 		void ShowPickerDialog()
 		{
 			if (VirtualView == null)
 				return;
 
+			if (_dialog != null && _dialog.IsShowing)
+				return;
+
 			var date = VirtualView.Date;
-			ShowPickerDialog(date.Year, date.Month, date.Day);
+			ShowPickerDialog(date.Year, date.Month - 1, date.Day);
 		}
 
 		void ShowPickerDialog(int year, int month, int day)

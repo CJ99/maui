@@ -4,10 +4,12 @@ using System.ComponentModel;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.SwipeView;
 
@@ -659,7 +661,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			button.TitleEdgeInsets = titleEdgeInsets;
 
 			var labelString = button.TitleLabel.Text ?? string.Empty;
+
+#pragma warning disable BI1234 // Type or member is obsolete
 			var titleSize = !string.IsNullOrEmpty(labelString) ? labelString.StringSize(button.TitleLabel.Font) : CGSize.Empty;
+#pragma warning restore BI1234 // Type or member is obsolete
 			var imageEdgeInsets = new UIEdgeInsets(-(titleSize.Height + spacing), 0.0f, 0.0f, -titleSize.Width);
 			button.ImageEdgeInsets = imageEdgeInsets;
 		}
@@ -698,7 +703,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				catch (Exception)
 				{
 					// UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
-					Log.Warning("SwipeView", "Can not load SwipeItem Icon.");
+					Forms.MauiContext?.CreateLogger<SwipeViewRenderer>()?.LogWarning("Can not load SwipeItem Icon");
 				}
 			}
 		}

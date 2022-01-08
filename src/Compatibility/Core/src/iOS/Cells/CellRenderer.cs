@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -45,6 +46,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				tableViewCell.IsAccessibilityElement = cell.GetValue(AutomationProperties.IsInAccessibleTreeProperty).Equals(true);
 			else
 				tableViewCell.IsAccessibilityElement = false;
+
+			if (cell.IsSet(AutomationProperties.ExcludedWithChildrenProperty))
+				tableViewCell.AccessibilityElementsHidden = cell.GetValue(AutomationProperties.ExcludedWithChildrenProperty).Equals(true);
+			else
+				tableViewCell.AccessibilityElementsHidden = false;
 
 			if (cell.IsSet(AutomationProperties.NameProperty))
 				tableViewCell.AccessibilityLabel = cell.GetValue(AutomationProperties.NameProperty).ToString();

@@ -11,8 +11,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public ShellHeaderView(Shell element)
 		{
-			Shell.VerifyShellUWPFlagEnabled(nameof(ShellHeaderView));
-
 			SetElement(element);
 			SizeChanged += OnShellHeaderViewSizeChanged;
 			HorizontalContentAlignment = HorizontalAlignment.Stretch;
@@ -21,7 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnShellHeaderViewSizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			if (Element is Layout layout)
+			if (Element is Compatibility.Layout layout)
 				layout.ForceLayout();
 		}
 

@@ -6,10 +6,11 @@ using Foundation;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform.iOS;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.Controls.Platform;
 
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using NativeLabel = UIKit.UILabel;
 #else
@@ -452,6 +453,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateTextPlainText()
 		{
 			_formatted = Element.FormattedText;
@@ -474,6 +476,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			UpdateLayout();
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateFormattedText()
 		{
 #if __MOBILE__
